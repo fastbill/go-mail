@@ -57,19 +57,33 @@ func MustNew(baseURL, key string) mail.Client {
 func (c *Client) Send(mail *mail.Mail) error {
 	msg := messageFromMail(mail)
 
-	_, err := c.sendPayload(c.sendEndpoint, &payload{
+	res, err := c.sendPayload(c.sendEndpoint, &payload{
 		Key:     c.key,
 		Message: msg,
 	})
-	return err
+	if err != nil {
+		return err
+	}
+
+	if res.Body != nil {
+		return res.Body.Close()
+	}
+	return nil
 }
 
 // Ping returns an error if the key or endpoint are wrong
 func (c *Client) Ping() error {
-	_, err := c.sendPayload(c.pingEndpoint, &payload{
+	res, err := c.sendPayload(c.pingEndpoint, &payload{
 		Key: c.key,
 	})
-	return err
+	if err != nil {
+		return err
+	}
+
+	if res.Body != nil {
+		return res.Body.Close()
+	}
+	return nil
 }
 
 func (c *Client) sendPayload(endpoint string, data *payload) (*http.Response, error) {
