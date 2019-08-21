@@ -139,7 +139,7 @@ func TestSendPayload(t *testing.T) {
 	client := MustNew("http://foo.bar", "foobar").(*Client)
 	client.httpClient = nil
 
-	_, err := client.sendPayload("", &payload{
+	res, err := client.sendPayload("", &payload{
 		Message: &message{
 			Headers: map[string]interface{}{
 				"hola": func() {
@@ -148,5 +148,6 @@ func TestSendPayload(t *testing.T) {
 			},
 		},
 	})
+	res.Body.Close()
 	assert.Error(t, err)
 }
