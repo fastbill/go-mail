@@ -11,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNew(t *testing.T) {
@@ -139,6 +140,7 @@ func TestSendPayload(t *testing.T) {
 	client := MustNew("http://foo.bar", "foobar").(*Client)
 	client.httpClient = nil
 
+	// nolint: bodyclose
 	_, err := client.sendPayload("", &payload{
 		Message: &message{
 			Headers: map[string]interface{}{
@@ -148,5 +150,5 @@ func TestSendPayload(t *testing.T) {
 			},
 		},
 	})
-	assert.Error(t, err)
+	require.Error(t, err)
 }
