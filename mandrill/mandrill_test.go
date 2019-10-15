@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/fastbill/go-mail"
+	"github.com/fastbill/go-mail/v2"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
