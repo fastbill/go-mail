@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/fastbill/go-mail"
+	"github.com/fastbill/go-mail/v2"
 )
 
 var (
