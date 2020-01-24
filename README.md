@@ -13,8 +13,8 @@ Pull requests for additional mail providers are very welcome.
 package main
 
 import (
-	"github.com/fastbill/go-mail/v2"
-	"github.com/fastbill/go-mail/v2/mandrill"
+	"github.com/fastbill/go-mail/v3"
+	"github.com/fastbill/go-mail/v3/mandrill"
 )
 
 func main() {

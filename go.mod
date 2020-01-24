@@ -1,4 +1,4 @@
-module github.com/fastbill/go-mail/v2
+module github.com/fastbill/go-mail/v3
 
 go 1.13
 
