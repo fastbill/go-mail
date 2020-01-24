@@ -16,9 +16,9 @@ import (
 
 func TestNew(t *testing.T) {
 	t.Run("valid url", func(t *testing.T) {
-		client, err := New("https://fastbill.com", "")
+		mailer, err := New("https://fastbill.com", "")
 		assert.NoError(t, err)
-		assert.NotNil(t, client)
+		assert.NotNil(t, mailer)
 	})
 
 	t.Run("invalid url", func(t *testing.T) {
@@ -57,32 +57,34 @@ func (m *MockClient) Post(url string, contentType string, payload io.Reader) (*h
 }
 
 func TestSend(t *testing.T) {
-	client := MustNew("http://foo.bar", "foobar").(*Client)
+	mailer := MustNew("http://foo.bar", "foobar")
 
 	t.Run("happy path", func(t *testing.T) {
 
-		// Set mock client
+		// Set mock mailer
 		mockClient := new(MockClient)
-		client.httpClient = mockClient
+		mailer.httpClient = mockClient
 
 		expectedBody := `{"key":"foobar","message":{"html":"","text":"World","subject":"Hello","from_email":"foo@domain.com","from_name":"Foo","to":[{"email":"bar@domain.com","name":"Bar","type":"to"}]}}
 `
 		mockClient.On("Post", "http://foo.bar/messages/send.json", "application/json", expectedBody).
 			Return(&http.Response{StatusCode: 200}, nil)
 
-		err := client.Send(&mail.Mail{
-			From:    &mail.Sender{Name: "Foo", Email: "foo@domain.com"},
-			To:      []mail.Recipient{mail.Recipient{Name: "Bar", Email: "bar@domain.com"}},
-			Subject: "Hello",
-			Text:    "World",
+		err := mailer.Send(&mail.Mail{
+			Config: mail.Config{
+				From:    &mail.Address{Name: "Foo", Email: "foo@domain.com"},
+				To:      []mail.Address{mail.Address{Name: "Bar", Email: "bar@domain.com"}},
+				Subject: "Hello",
+			},
+			Text: "World",
 		})
 		assert.NoError(t, err)
 	})
 
-	t.Run("http.Client error", func(t *testing.T) {
-		// Set mock client
+	t.Run("http.Mailer error", func(t *testing.T) {
+		// Set mock mailer
 		mockClient := new(MockClient)
-		client.httpClient = mockClient
+		mailer.httpClient = mockClient
 
 		expectedBody := `{"key":"foobar","message":{"html":"","text":"World","subject":"Hello","from_email":"foo@domain.com","from_name":"Foo","to":[{"email":"bar@domain.com","name":"Bar","type":"to"}]}}
 `
@@ -90,19 +92,21 @@ func TestSend(t *testing.T) {
 		mockClient.On("Post", "http://foo.bar/messages/send.json", "application/json", expectedBody).
 			Return(nil, errors.New("Something is broken"))
 
-		err := client.Send(&mail.Mail{
-			From:    &mail.Sender{Name: "Foo", Email: "foo@domain.com"},
-			To:      []mail.Recipient{mail.Recipient{Name: "Bar", Email: "bar@domain.com"}},
-			Subject: "Hello",
-			Text:    "World",
+		err := mailer.Send(&mail.Mail{
+			Config: mail.Config{
+				From:    &mail.Address{Name: "Foo", Email: "foo@domain.com"},
+				To:      []mail.Address{mail.Address{Name: "Bar", Email: "bar@domain.com"}},
+				Subject: "Hello",
+			},
+			Text: "World",
 		})
 		assert.Error(t, err)
 	})
 
 	t.Run("wrong status code", func(t *testing.T) {
-		// Set mock client
+		// Set mock mailer
 		mockClient := new(MockClient)
-		client.httpClient = mockClient
+		mailer.httpClient = mockClient
 
 		expectedBody := `{"key":"foobar","message":{"html":"","text":"World","subject":"Hello","from_email":"foo@domain.com","from_name":"Foo","to":[{"email":"bar@domain.com","name":"Bar","type":"to"}]}}
 `
@@ -110,38 +114,40 @@ func TestSend(t *testing.T) {
 		mockClient.On("Post", "http://foo.bar/messages/send.json", "application/json", expectedBody).
 			Return(&http.Response{StatusCode: 400}, nil)
 
-		err := client.Send(&mail.Mail{
-			From:    &mail.Sender{Name: "Foo", Email: "foo@domain.com"},
-			To:      []mail.Recipient{mail.Recipient{Name: "Bar", Email: "bar@domain.com"}},
-			Subject: "Hello",
-			Text:    "World",
+		err := mailer.Send(&mail.Mail{
+			Config: mail.Config{
+				From:    &mail.Address{Name: "Foo", Email: "foo@domain.com"},
+				To:      []mail.Address{mail.Address{Name: "Bar", Email: "bar@domain.com"}},
+				Subject: "Hello",
+			},
+			Text: "World",
 		})
 		assert.Error(t, err)
 	})
 }
 
 func TestPing(t *testing.T) {
-	client := MustNew("http://foo.bar", "foobar").(*Client)
+	mailer := MustNew("http://foo.bar", "foobar")
 
-	// Set mock client
+	// Set mock mailer
 	mockClient := new(MockClient)
-	client.httpClient = mockClient
+	mailer.httpClient = mockClient
 
 	expectedBody := `{"key":"foobar"}
 `
 	mockClient.On("Post", "http://foo.bar/users/ping.json", "application/json", expectedBody).
 		Return(&http.Response{StatusCode: 200}, nil)
 
-	err := client.Ping()
+	err := mailer.Ping()
 	assert.NoError(t, err)
 }
 
 func TestSendPayload(t *testing.T) {
-	client := MustNew("http://foo.bar", "foobar").(*Client)
-	client.httpClient = nil
+	mailer := MustNew("http://foo.bar", "foobar")
+	mailer.httpClient = nil
 
 	// nolint: bodyclose
-	_, err := client.sendPayload("", &payload{
+	_, err := mailer.sendPayload("", &payload{
 		Message: &message{
 			Headers: map[string]interface{}{
 				"hola": func() {

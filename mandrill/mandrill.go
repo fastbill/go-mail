@@ -16,8 +16,8 @@ var (
 	pingPath = "/users/ping.json"
 )
 
-// Client is a mandrill http client
-type Client struct {
+// Mandrill is a mandrill implementation of mailer interface.
+type Mandrill struct {
 	key        string
 	baseURL    *url.URL
 	httpClient mail.HTTPClient
@@ -26,14 +26,14 @@ type Client struct {
 	pingEndpoint string
 }
 
-// New creates a new client with the given parameters
-func New(baseURL string, key string) (mail.Client, error) {
+// New creates a new Mandrill mailer with the given parameters.
+func New(baseURL string, key string) (*Mandrill, error) {
 	parsedURL, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Client{
+	return &Mandrill{
 		key:        key,
 		baseURL:    parsedURL,
 		httpClient: &http.Client{},
@@ -43,22 +43,21 @@ func New(baseURL string, key string) (mail.Client, error) {
 	}, nil
 }
 
-// MustNew returns a new client or panics
-func MustNew(baseURL, key string) mail.Client {
-	client, err := New(baseURL, key)
+// MustNew returns a new Mandrill mailer or panics.
+func MustNew(baseURL, key string) *Mandrill {
+	mailer, err := New(baseURL, key)
 	if err != nil {
 		panic(err)
 	}
 
-	return client
+	return mailer
 }
 
-// Send an email
-func (c *Client) Send(mail *mail.Mail) error {
+// Send sends an email.
+func (m *Mandrill) Send(mail *mail.Mail) error {
 	msg := messageFromMail(mail)
-
-	res, err := c.sendPayload(c.sendEndpoint, &payload{
-		Key:     c.key,
+	res, err := m.sendPayload(m.sendEndpoint, &payload{
+		Key:     m.key,
 		Message: msg,
 	})
 	if err != nil {
@@ -68,13 +67,14 @@ func (c *Client) Send(mail *mail.Mail) error {
 	if res.Body != nil {
 		return res.Body.Close()
 	}
+
 	return nil
 }
 
-// Ping returns an error if the key or endpoint are wrong
-func (c *Client) Ping() error {
-	res, err := c.sendPayload(c.pingEndpoint, &payload{
-		Key: c.key,
+// Ping returns an error if the key or endpoint are wrong.
+func (m *Mandrill) Ping() error {
+	res, err := m.sendPayload(m.pingEndpoint, &payload{
+		Key: m.key,
 	})
 	if err != nil {
 		return err
@@ -83,17 +83,18 @@ func (c *Client) Ping() error {
 	if res.Body != nil {
 		return res.Body.Close()
 	}
+
 	return nil
 }
 
-func (c *Client) sendPayload(endpoint string, data *payload) (*http.Response, error) {
+func (m *Mandrill) sendPayload(endpoint string, data *payload) (*http.Response, error) {
 	buf := &bytes.Buffer{}
 	err := json.NewEncoder(buf).Encode(data)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := c.httpClient.Post(endpoint, "application/json", buf)
+	res, err := m.httpClient.Post(endpoint, "application/json", buf)
 	if err != nil {
 		return nil, err
 	}
