@@ -42,18 +42,40 @@ func TestNewStandardTemplateMailer(t *testing.T) {
 	})
 }
 
-func TestMustStandardTemplateMailer(t *testing.T) {
+func TestMustNewStandardTemplateMailer(t *testing.T) {
 	mockMailer := &MockMailer{}
 
 	assert.Panics(t, func() {
-		MustStandardTemplateMailer(mockMailer, "./invalid/*.tmpl")
+		MustNewStandardTemplateMailer(mockMailer, "./invalid/*.tmpl")
 	})
 }
 
 func TestStandardTemplateMailer_Send(t *testing.T) {
+	t.Run("config is required", func(t *testing.T) {
+		mockMailer := &MockMailer{}
+		templateMailer := MustNewStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
+
+		template := &Template{}
+		err := templateMailer.Send(template, nil)
+
+		require.Error(t, err)
+		assert.EqualError(t, err, "config parameter is required")
+	})
+
+	t.Run("template is required", func(t *testing.T) {
+		mockMailer := &MockMailer{}
+		templateMailer := MustNewStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
+
+		config := &Config{}
+		err := templateMailer.Send(nil, config)
+
+		require.Error(t, err)
+		assert.EqualError(t, err, "template parameter is required")
+	})
+
 	t.Run("failed to execute plain text template", func(t *testing.T) {
 		mockMailer := &MockMailer{}
-		templateMailer := MustStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
+		templateMailer := MustNewStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
 
 		template := &Template{
 			TextPath: "foo_txt.tmpl",
@@ -66,7 +88,7 @@ func TestStandardTemplateMailer_Send(t *testing.T) {
 
 	t.Run("failed to execute HTML template", func(t *testing.T) {
 		mockMailer := &MockMailer{}
-		templateMailer := MustStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
+		templateMailer := MustNewStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
 
 		template := &Template{
 			TextPath: "foo_text.tmpl",
@@ -80,7 +102,7 @@ func TestStandardTemplateMailer_Send(t *testing.T) {
 
 	t.Run("failed to send email", func(t *testing.T) {
 		mockMailer := &MockMailer{}
-		templateMailer := MustStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
+		templateMailer := MustNewStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
 
 		errUnexpected := errors.New("unexpected error")
 		mockMailer.On("Send", mock.Anything).Return(errUnexpected)
@@ -97,7 +119,7 @@ func TestStandardTemplateMailer_Send(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		mockMailer := &MockMailer{}
-		templateMailer := MustStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
+		templateMailer := MustNewStandardTemplateMailer(mockMailer, "./testdata/*.tmpl")
 
 		config := &Config{
 			From: &Address{
@@ -121,6 +143,9 @@ func TestStandardTemplateMailer_Send(t *testing.T) {
 		mockMailer.On("Send", eml).Return(nil)
 
 		template := &Template{
+			Data: map[string]interface{}{
+				"FooVar": "foo",
+			},
 			TextPath: "foo_text.tmpl",
 			HTMLPath: "foo_html.tmpl",
 		}

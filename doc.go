@@ -9,7 +9,7 @@ Package mail provides an easy interface with interchangable backends.
 	}
 
 	// Create template mailer.
-	templateMailer := MustStandardTemplateMailer(mandrillMailer, "/templates/*.tmpl")
+	templateMailer := MustNewStandardTemplateMailer(mandrillMailer, "/templates/*.tmpl")
 
 	// Configure email for sending.
 	template := &Template{
