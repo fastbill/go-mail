@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Create template mailer.
-	templateMailer := MustStandardTemplateMailer(mandrillMailer, "/templates/*.tmpl")
+	templateMailer := MustNewStandardTemplateMailer(mandrillMailer, "/templates/*.tmpl")
 
 	// Configure email for sending.
 	template := &Template{

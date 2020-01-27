@@ -2,6 +2,7 @@ package mail
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"net/http"
 	"text/template"
@@ -88,8 +89,8 @@ func NewStandardTemplateMailer(mailer Mailer, templatePath string) (*StandardTem
 	}, nil
 }
 
-// MustStandardTemplateMailer returns a new StandardTemplateMailer mailer or panics.
-func MustStandardTemplateMailer(mailer Mailer, templatePath string) *StandardTemplateMailer {
+// MustNewStandardTemplateMailer returns a new StandardTemplateMailer mailer or panics.
+func MustNewStandardTemplateMailer(mailer Mailer, templatePath string) *StandardTemplateMailer {
 	tpl, err := NewStandardTemplateMailer(mailer, templatePath)
 	if err != nil {
 		panic(err)
@@ -100,6 +101,14 @@ func MustStandardTemplateMailer(mailer Mailer, templatePath string) *StandardTem
 
 // Send sends an email.
 func (m *StandardTemplateMailer) Send(template *Template, config *Config) error {
+	if config == nil {
+		return errors.New("config parameter is required")
+	}
+
+	if template == nil {
+		return errors.New("template parameter is required")
+	}
+
 	textBuf := &bytes.Buffer{}
 	if err := m.template.ExecuteTemplate(textBuf, template.TextPath, template.Data); err != nil {
 		return err
