@@ -73,7 +73,7 @@ func TestSend(t *testing.T) {
 		err := mailer.Send(&mail.Mail{
 			Config: mail.Config{
 				From:    &mail.Address{Name: "Foo", Email: "foo@domain.com"},
-				To:      []mail.Address{mail.Address{Name: "Bar", Email: "bar@domain.com"}},
+				To:      []mail.Address{{Name: "Bar", Email: "bar@domain.com"}},
 				Subject: "Hello",
 			},
 			Text: "World",
@@ -90,12 +90,12 @@ func TestSend(t *testing.T) {
 `
 
 		mockClient.On("Post", "http://foo.bar/messages/send.json", "application/json", expectedBody).
-			Return(nil, errors.New("Something is broken"))
+			Return(nil, errors.New("something is broken"))
 
 		err := mailer.Send(&mail.Mail{
 			Config: mail.Config{
 				From:    &mail.Address{Name: "Foo", Email: "foo@domain.com"},
-				To:      []mail.Address{mail.Address{Name: "Bar", Email: "bar@domain.com"}},
+				To:      []mail.Address{{Name: "Bar", Email: "bar@domain.com"}},
 				Subject: "Hello",
 			},
 			Text: "World",
@@ -117,7 +117,7 @@ func TestSend(t *testing.T) {
 		err := mailer.Send(&mail.Mail{
 			Config: mail.Config{
 				From:    &mail.Address{Name: "Foo", Email: "foo@domain.com"},
-				To:      []mail.Address{mail.Address{Name: "Bar", Email: "bar@domain.com"}},
+				To:      []mail.Address{{Name: "Bar", Email: "bar@domain.com"}},
 				Subject: "Hello",
 			},
 			Text: "World",

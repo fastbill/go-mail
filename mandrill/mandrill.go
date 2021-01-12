@@ -100,7 +100,7 @@ func (m *Mandrill) sendPayload(endpoint string, data *payload) (*http.Response, 
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Invalid status code: %d", res.StatusCode)
+		return nil, fmt.Errorf("invalid status code: %d", res.StatusCode)
 	}
 
 	return res, nil
