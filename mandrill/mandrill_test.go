@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/fastbill/go-mail/v3"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/fastbill/go-mail/v3"
 )
 
 func TestNew(t *testing.T) {
