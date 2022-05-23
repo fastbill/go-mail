@@ -1,9 +1,9 @@
 package mock
 
 import (
-	"github.com/fastbill/go-mail/v3"
-
 	tmock "github.com/stretchr/testify/mock"
+
+	"github.com/fastbill/go-mail/v3"
 )
 
 // TemplateMailer is a mock implementation of the mail.TemplateMailer interface.
